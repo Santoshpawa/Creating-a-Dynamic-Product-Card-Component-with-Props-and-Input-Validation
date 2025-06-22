@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        .form {
+            display: flex;
+            justify-content: space-evenly;
+            margin: 20px;
+        }
+
+        input {
+            font-size: 16px;
+            padding: 8px;
+            border: 1px solid;
+            border-radius: 5px;
+        }
+
+        button {
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: rgb(211, 61, 211);
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: blueviolet;
+        }
+
+        button:active {
+            background-color: rgb(72, 4, 136);
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+</body>
+
+</html>
+<script type="text/babel">
+    const { useState } = React;
+    function ProductCard({ name, price, image, discount }) {
+        return (
+            <div className="product-card">
+                <img src={image} alt={name} width={200} />
+                <h3>{name}</h3>
+                <p>Price: ₹{price}</p>
+                {discount != undefined && (
+                    <p className="discount-badge">Discount: {discount}%</p>
+                )}
+
+            </div>
+        );
+    }
+
+    function ProductForm() {
+        const [products, setProducts] = useState([]);
+        const [formData, setFormData] = useState({
+            name: "",
+            price: '',
+            image: '',
+            discount: '',
+        });
+        const [errors, setErrors] = useState({});
+        const validate = () => {
+            const newErrors = {};
+            if (!formData.name.trim()) newErrors.name = 'Name is required.';
+            if (!formData.price || isNaN(formData.price) || Number(formData.price) <= 0)
+                newErrors.price = 'Price must be a positive number.';
+            // if (!formData.image.startsWith('http'))
+            //     newErrors.image = 'Image must be a valid URL.';
+            if (formData.discount && (isNaN(formData.discount) ||
+                formData.discount < 0 || formData.discount > 100)) {
+                newErrors.discount = 'Discount nust be between 0 and 100.';
+            }
+            return newErrors;
+        };
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            const validationErrors = validate();
+            if (Object.keys(validationErrors).length > 0) {
+                setErrors(validationErrors);
+                return;
+            }
+            setProducts([...products, { ...formData, price: Number(formData.price), discount: formData.discount ? Number(formData.discount) : undefined }])
+            setFormData({ name: '', price: '', image: '', discount: '' });
+            setErrors({});
+        };
+        const handleChange = (e) => {
+            setFormData({ ...formData, [e.target.name]: e.target.value })
+        };
+        return (
+            <div>
+                <h2>Add a Product</h2>
+                <form className="form" onSubmit={handleSubmit}>
+                    <input
+                        name='name'
+                        placeholder="Name"
+                        value={formData.name}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        name='price'
+                        placeholder="Price"
+                        value={formData.price}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        name="image"
+                        placeholder='Image URL'
+                        value={formData.image}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        name='discount'
+                        placeholder='Discount %'
+                        value={formData.discount}
+                        onChange={handleChange}
+                    />
+
+                    <button type="submit">Add Product</button>
+
+                </form>
+                <hr />
+                <div class="errorsContainer">
+                    {errors.name && <p className='error'>{errors.name}</p>}
+                    {errors.price && <p className='error'>{errors.price}</p>}
+                    {errors.image && <p className="error">{errors.image}</p>}
+                    {errors.discount && <p className='error'>{errors.discount}</p>}
+                </div>
+                <h2>Product List</h2>
+                <div className="product-list">
+                    {products.map((p) => (
+                        <ProductCard {...p} />
+                    ))}
+                </div>
+            </div>
+        )
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root')).render(<ProductForm />)
+
+</script>
